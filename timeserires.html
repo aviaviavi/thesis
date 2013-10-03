@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Time Series</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <!-- Bootstrap -->
+    <link href="css/bootstrap.min.css" rel="stylesheet" media="screen">
+    <!-- jQuery (necessary for Bootstrap's JavaScript plugins) -->
+    <script src="http://code.jquery.com/jquery.js"></script>
+     <!-- Include all compiled plugins (below), or include individual files as needed -->
+    <script src="js/bootstrap.min.js"></script>
+
+    <!-- HTML5 shim and Respond.js IE8 support of HTML5 elements and media queries -->
+    <!--[if lt IE 9]>
+      <script src="../../assets/js/html5shiv.js"></script>
+      <script src="../../assets/js/respond.min.js"></script>
+      <![endif]-->
+      <script src="js/hawkes.js"></script>
+      <script src="js/runSimulation.js"></script>
+      <script type="text/javascript">
+        $(document).ready(function() {
+                runSimulation();
+                });
+      </script>
+  </head>
+  <body>
+    <h1>Messages Sent</h1>
+		<table id="data" class="table table-hover table-bordered">
+			<tr>
+				<td>Sender</td>
+				<td>Time</td>
+			</tr>
+		</table>
+
+     </body>
+</html>
