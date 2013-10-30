@@ -1,35 +1,84 @@
+//rate is arrivals per hour
+
 var eventIndex = 0;
+var simulationSlowDown = .2; //higher number means a slower simulation
+var start;
+var simulation;
 
 function runSimulation() {
-    console.log("here1");
-    var f = new hawkesProcess(5, 100, 'f');
-    var g = new hawkesProcess(5, 100, 'g');
-    var h = new hawkesProcess(5, 100, 'h');
-    f.excitedBy(g, f.decay, .001);
-    g.excitedBy(f, g.decay, .001); 
+    nameVector = ["Finn", "Jake", "Ice King"];
 
-    var processes = [f, g, h];
-    simulate(processes, 3600);
+    friendMatrixTheta = [
+        [0, .1, 0],
+        [.1, 0, 0],
+        [0, 0, 0]
+                        ];
 
-    var sortedEvents = [];
+    friendMatrixBeta = [
+        [0, 10000, 0],
+        [10000, 0, 0],
+        [0, 0, 0]
+                       ];
 
-    for (var i = 0; i < processes.length; i++) {
-        var p = processes[i];
-        for (var j = 0; j < p.events.length; j++) {
-            sortedEvents.push([p.events[j], p.name]);
+    simulation = new simulateConversations(nameVector, friendMatrixTheta, friendMatrixBeta, simulationSlowDown, 3600);
+    console.log(simulation.processes);
+    //console.log(simulation.sortedEventsLabeled);
+    //display on html
+    for (var i = 0; i < simulation.sortedEventsLabeled.length; i++) {
+        start = new Date();
+        delay = simulation.sortedEventsLabeled[i][0];
+        setTimeout(function() {
+            $('#data tr:first').after('<tr><td>' + simulation.sortedEventsLabeled[eventIndex][1].split("to").toString() + '</td><td>' + simulation.sortedEventsLabeled[eventIndex][0] + '</td></tr>');
+            eventIndex++;
+        }, delay * simulation.slowdown);
+
+    }
+}
+
+function reverseName(name) {
+    return name.split('to').reverse().join('to');
+}
+
+function simulateConversations(nameVector, friendMatrixTheta, friendMatrixBeta, slowdown, ticksPerHour) {
+    this.slowdown = slowdown;
+    this.friendMatrixTheta = friendMatrixTheta;
+    this.friendMatrixBeta = friendMatrixBeta;
+    this.numPeople = nameVector.length;
+    this.nameVector = nameVector;
+    this.processes = []
+    this.nameToProcessMap = {};
+
+    //create processes
+    var p;
+    for (var i = 0; i < nameVector.length; i++) {
+        for (var j = 0; j < nameVector.length; j++) {
+            if (i === j) continue;
+            this.processes.push(new hawkesProcess(.2, (100), nameVector[i] + "to" + nameVector[j]));
+            p = this.processes[this.processes.length-1];
+            this.nameToProcessMap[p.name] = p;
+        }
+    }
+    
+    //console.log(this.processes);
+    //set excitation params
+    for (var i = 0; i < nameVector.length; i++) {
+        for (var j = 0; j < nameVector.length; j++) {
+            if (i === j) continue;
+            if (this.friendMatrixTheta[i][j] == 0) continue;
+            from = nameVector[i];
+            to = nameVector[j];
+
+            excited = this.nameToProcessMap[from + "to" + to];
+            excitor = this.nameToProcessMap[to + "to" + from];
+
+            excited.excitedBy(excitor, excited.decay, this.friendMatrixTheta[i][j], this.friendMatrixBeta[i][j]);
         }
     }
 
-    sortedEvents.sort(function(a, b) {return a[0] - b[0];}); 
+   
+    simulate(this.processes, ticksPerHour);
 
-    for (var i = 0; i < sortedEvents.length; i++) {
-        delay = sortedEvents[i][0];
-        setTimeout(function() {
-            $('#data tr:first').after('<tr><td>' + sortedEvents[eventIndex][1] + '</td><td>' + sortedEvents[eventIndex][0] + '</td></tr>');
-            eventIndex++;
-        }, delay);
-
-    }
-
-    console.log(sortedEvents);
+    var temp = sortEvents(this.processes);
+    this.sortedEventsLabeled = temp[1],
+    this.sortedEvents = temp[0];
 }

@@ -1,0 +1,35 @@
+%% 
+%% LaTeX Boilerplate (http://github.com/gbluma/latex-boilerplate/)
+%% 
+
+\documentclass[12pt,fleqn,leqno,letterpaper]{article}
+
+
+
+\begin{document}
+Poisson Likelihood, Gamma Prior \\
+$p(\lambda \mid d) = p(d \mid \lambda) p(\lambda) $\
+Poisson likelihood\\
+ $ \frac{t\lambda^{k} e^{-\lambda t}}{k!} \propto t\lambda^{k} e^{-\lambda t} $\\
+Prior\\
+$ \frac{\beta^{\alpha}}{\Gamma(\alpha)}\lambda^{\alpha - 1} e^{-\beta\lambda} \propto \lambda^{\alpha -1} e^{-\beta \lambda} $\\
+Prior * Likelihood\\
+$ \propto t\lambda^{\alpha + k - 1} e^{-\lambda(\beta+t)} $\\
+= t * Gamma($\lambda;\alpha+k,\beta+t$)\\
+= 
+$\frac{(\beta+t)^{\alpha+k}}{\Gamma(\alpha+k)} \lambda^{\alpha+k-1} e^{-\lambda(\beta + t)}$\\
+If we derive WRT $\lambda$, there is a root at
+$ \lambda = \frac{\alpha + k -1}{\beta + t} $ 
+
+
+
+
+
+% -- Import content here
+
+
+
+% -- Bibliography (APA style)
+\bibliography{references}
+
+\end{document}
