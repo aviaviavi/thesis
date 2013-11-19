@@ -180,7 +180,31 @@ function inferPoissonHomogenous(allProcesses, t, priorAlpha, priorBeta) {
 
 //best fit lambda for homogenous poisson process
 function bestFitRateHPP(t, k, priorAlpha, priorBeta) {
-    return float(priorAlpha + k -1) / float(priorBeta + t);
+    return (priorAlpha + k -1).toFixed(2) / (priorBeta + t).toFixed(2);
 }
+
+//poissonprocess(lambda) with k arrivals in t interval, gamma(a, b) prior
+function posteriorProb(lambda, t, k, a, b) {
+    return (Math.pow((b+t), (a+k)) / gamma(b+t)) * t * Math.pow(lambda, (a+k-1)) * Math.exp(-lambda * (b+t));
+}
+
+friendsHyp = [100, 100];
+notFriendsHyp = [2, 2];
+
+function friends(t, k) {
+    lambda_0 = bestFitRateHPP(t, k, notFriendsHyp[0], notFriendsHyp[1]);
+    lambda_1 = bestFitRateHPP(t, k, friendsHyp[0], friendsHyp[1]);
+    console.log(lambda_0);
+    console.log(lambda_1);
+    p_h0 = posteriorProb(lambda_0, t, k, notFriendsHyp[0], notFriendsHyp[1]);
+    p_h1 = posteriorProb(lambda_1, t, k, friendsHyp[0], friendsHyp[1]);
+    console.log(p_h0);
+    console.log(p_h1);
+    return p_h1 > p_h0;
+}
+
+console.log(friends(100, 1));
+console.log(friends(100, 1000));
+
 
 
