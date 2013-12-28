@@ -1,0 +1,270 @@
+from Queue import Queue, PriorityQueue
+from collections import Counter, defaultdict
+from heapq import *
+import time
+import pdb
+
+class CachePolicy(object):
+    """
+    Our partially abstract cache policy class. We just call get item on a sequence of data (one part at a time for now) and it keeps track of
+    cache hits and misses given the policy.
+    """
+
+    def __init__(self, cache_size):
+        self.hits = 0
+        self.misses = 0
+        self.cache_size = cache_size
+
+    def get_item(self, item):
+        abstract
+
+    def get_misses(self):
+        return self.misses 
+
+    def get_hits(self):
+        return self.hits 
+
+    def is_full(self):
+        abstract
+
+    def print_stats(self):
+        print self.policy_name, "hits: " + str(self.get_hits()), "misses: " + str(self.get_misses())
+
+
+class LRUCache(CachePolicy):
+    """
+    Evict the least recently used item
+    """
+
+    policy_name = "LRU"
+
+    def __init__(self, cache_size):
+        super(LRUCache, self).__init__(cache_size)
+        self.cache = [] 
+    
+    def get_item(self, item):
+        if item in self.cache:
+            self.hits += 1
+            self.cache.remove(item)
+            self.cache.append(item)
+        else:
+            self.misses += 1
+            if not self.is_full():
+                self.cache.append(item)
+            else:
+                self.cache.pop(0)
+                self.cache.append(item)
+
+    def is_full(self):
+        return len(self.cache) == self.cache_size
+
+
+class LRU2Cache(LRUCache):
+    """
+    Evict the item with the least recent penultimate use
+    """
+
+    policy_name = "LRU2"
+    
+    def __init__(self, cache_size):
+        super(LRU2Cache, self).__init__(cache_size)
+        self.timing = defaultdict(list)
+
+    def get_item(self, item):
+        #get index we are editing 
+        try:
+            current_q = [x[2] for x in self.cache]
+            index = current_q.index(item)
+        except ValueError:
+            index = None
+        if item in current_q:
+            self.hits += 1
+            self.cache[index] = [self.cache[index][1], time.time(), item] #[0] is 2nd use, [1] is this use
+        else:
+            self.misses += 1
+            # make the new item to put into cache
+            if self.timing[item]:
+                new_entry = [self.timing[item][1], time.time(), item]
+            else:
+                new_entry = [0, time.time(), item]
+            #either add it, or evict and add
+            if not self.is_full():
+                self.cache.append(new_entry)
+            else:
+                heapq.heapify(self.cache)
+                evicted = heapreplace(self.cache, new_entry)
+                self.timing[evicted[2]] = evicted
+
+
+class LFUCache(CachePolicy):
+    """
+    Evict the least frequently used item
+    """
+
+    policy_name = "LFU"
+
+    def __init__(self, cache_size):
+        super(LFUCache, self).__init__(cache_size)
+        self.cache = [] 
+        self.counts = Counter()
+    
+    def is_full(self):
+        return len(self.cache) == self.cache_size
+
+    def get_item(self, item):
+        self.counts[item] += 1
+        current_q = [x[1] for x in self.cache]
+        if item in current_q:
+            self.hits += 1
+            #increment this count in cache
+            index = self.cache.index([self.counts[item]-1, item])
+            self.cache[index][0] += 1
+        else:
+            self.misses += 1
+            if not self.is_full():
+                #add it to cache
+                self.cache.append([self.counts[item], item])
+            else:
+                #evitc lfu and replace
+                heapreplace(self.cache, [self.counts[item], item])
+
+class TwoQCache(CachePolicy):
+    """
+    A 2 Queue eviction policy. Just worked off of the paper by Johnson and Sasha
+    """
+
+    policy_name = "2Q"
+    
+    def __init__(self, cache_size):
+        super(TwoQCache, self).__init__(cache_size)
+        self.q0 = []
+        self.q1 = []
+        self.q_out = []
+        self.k_in = cache_size / 4
+        self.k_out = cache_size * 2 #TODO verify this is kosher
+
+    def is_full(self):
+        return len(self.q0) + len(self.q1) == self.cache_size
+
+    def get_item(self, item):
+        if item in self.q1:
+            self.hits += 1
+            self.q1.remove(item)
+            self.q1.append(item)
+        elif item in self.q_out:
+            self.hits += 1 #TODO is this actually a hit?
+            self.reclaim_for(item)
+            self.q1.append(item)
+        elif item in self.q0:
+            self.hits += 1
+            pass
+        else: #cache miss
+            self.misses += 1
+            self.reclaim_for(item)
+            self.q0.append(item)
+
+    def reclaim_for(self, item):
+        if not self.is_full():
+            pass
+        elif len(self.q0) > self.k_in:
+            self.q_out.append(self.q0.pop()) #evict from q0, store 'address' in q_out
+            if len(self.q_out) > self.k_out:
+                self.q_out.pop()
+        else:
+            self.q1.pop()
+
+
+class ARCCache(CachePolicy):
+    """
+    Adaptive Replacement Cache Policy
+    """ 
+    
+    policy_name = "ARC"
+
+    def __init__(self, cache_size):
+        super(ARCCache, self).__init__(cache_size)
+        self.t1 = []
+        self.b1 = []
+        self.t2 = []
+        self.b2 = []
+        self.p = 0
+ 
+    def total_length(self):
+        return len(self.t1) + len(self.b1) + len(self.t2) + len(self.b2)
+
+    def get_item(self, item):
+
+        def replace(p):
+            if self.t1 and (item in self.b2 and len(self.t1) == p or len(self.t1) == p):
+                self.b1.append(self.t1.pop())
+            else:
+                self.b2.append(self.t2.pop())
+                
+        if item in self.t1:
+            self.hits += 1
+            self.t1.remove(item)
+            self.t2.append(item)
+        elif item in self.t2:
+            self.hits += 1
+            self.t2.remove(item)
+            self.t2.append(item)
+        elif item in self.b1:
+            self.misses += 1
+            self.p = min(self.cache_size, self.p + max(len(self.b2) / len(self.b1), 1))
+            replace(self.p)
+            self.t2.append(item)
+        elif item in self.b2:
+            self.misses += 1
+            self.p = max(self.cache_size, self.p - max(len(self.b1) / len(self.b2), 1))
+            replace(self.p)
+            self.t2.append(item)
+        else:
+            self.misses += 1
+            if len(self.t1) + len(self.b1) == self.cache_size:
+                if len(self.t1) < self.cache_size:
+                    self.b1.pop()
+                    replace(self.p)
+                else:
+                    self.t1.pop()
+            elif len(self.t1) + len(self.b1) < self.cache_size and self.total_length() >= self.cache_size:
+                if self.total_length() == 2 * self.cache_size:
+                    try:
+                        self.b2.pop()
+                    except:
+                        pass
+                    replace(self.p)
+            self.t1.append(item)
+
+
+class LRFUCache(CachePolicy):
+    """
+    Keep track of both recency and frequency
+    """
+
+    policy_name = "LRFU"
+
+    def __init__(self, cache_size, lam):
+        super(LRFUCache, self).__init__(cache_size)
+        self.cache = []
+        self.lam = lam
+        self.c_x = defaultdict(float)
+
+    def get_item(self, item):
+        #update our C(x) values
+        for x in self.c_x:
+            c_x[x] *= 2 ** -self.lam
+            if x == item:
+                c_x[x] += 1
+        #update those values in our cache
+        self.cache = [c_x[self.cache[i][1]] for i in range(len(self.cache))]
+        if item in [i[1] for i in self.cache]:
+            self.hits += 1
+        else:
+            self.misses += 1
+            if self.is_full():
+                heapq.heapify(self.cache)
+                heapq.heapreplace(self.cache, [self.c_x[item], item])
+            else:
+                self.cache.append([self.c_x[item], item]) 
+        
+

@@ -7,23 +7,27 @@
 
 
 \begin{document}
-Poisson Likelihood, Gamma Prior \\
-$p(\lambda \mid d) = p(d \mid \lambda) p(\lambda) $\
-Poisson likelihood\\
- $ \frac{t\lambda^{k} e^{-\lambda t}}{k!} \propto t\lambda^{k} e^{-\lambda t} $\\
-Prior\\
-$ \frac{\beta^{\alpha}}{\Gamma(\alpha)}\lambda^{\alpha - 1} e^{-\beta\lambda} \propto \lambda^{\alpha -1} e^{-\beta \lambda} $\\
-Prior * Likelihood\\
-$ \propto t\lambda^{\alpha + k - 1} e^{-\lambda(\beta+t)} $\\
-= t * Gamma($\lambda;\alpha+k,\beta+t$)\\
-= 
-$\frac{(\beta+t)^{\alpha+k}}{\Gamma(\alpha+k)} \lambda^{\alpha+k-1} e^{-\lambda(\beta + t)}$\\
-If we derive WRT $\lambda$, there is a root at
-$ \lambda = \frac{\alpha + k -1}{\beta + t} $ 
 
+We wish to learn the distribution of:
 
-
-
+$$
+p(Z, \alpha, \theta | X) \propto p(X | \alpha, \theta, Z) P(Z) p( \alpha, \theta) $$
+Where $Z = \{z_0, z_1, ... z_n | z_i = 0$ or $ 1 \}$. $X = \{ x_0, x_1, ..., x_n | x_i = \{t_i, k_i\} \}$. Each $x_i$ represents $k$ arrivals in $t$ time for conversation $i$.
+We want to favor big priors for the friends hypothesis, and small priors for the not friends hypothesis. So I defined the prior on priors to be:
+ $$
+p( \alpha, \theta) \propto \frac{1}{1 - \frac{\alpha_0 \theta_0}{\alpha_1 \theta_1}}
+$$
+so
+$$
+p(X | \alpha, \theta, Z) \propto \prod_i p(x_i | \alpha_0, \theta_0)p(z_i = 0) + p(x_i | \alpha_1, \theta_1) p(z_i = 1)
+$$
+where
+$$
+p(x_i | \alpha, \theta) = \int_0^\infty \frac{(\theta + t)^{\alpha+k}}{\Gamma({\alpha+k})} \lambda^{\alpha+k-1} e^{-\lambda(\theta+t)} d\lambda
+$$(A poisson likelihood with a gamma prior, integrating over all possible rates)
+$$
+= \frac{\Gamma(k+\alpha)}{\Gamma(\alpha)} \frac{\theta^\alpha}{(t+\theta)^{k+\alpha}} 
+$$
 
 % -- Import content here
 

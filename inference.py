@@ -1,12 +1,11 @@
 import math
 from scipy.special import gamma
-from scipy.special import gammainc
 from scipy.special import gammaln
 import matplotlib.pyplot as plt
 import scipy
 import random
 
-hyps = [[.5, 1.0], [10.0, 1.0]]
+hyps = [[.001, 1.0], [50.0, 1.0]]
 maxRate = 10
 
 def coin_flip(x):
@@ -85,7 +84,7 @@ def graphBeliefOnFixedT(t, hyps):
     pointsX = []
     pointsY = []
     pointsK = []
-    for k in range(1,maxRate*t):
+    for k in range(1,100):
         h0 = integralGammaPDF(t, k, hyps[0][0], hyps[0][1])
         h1 = integralGammaPDF(t, k, hyps[1][0], hyps[1][1])
         pointsX.append(k)
@@ -93,8 +92,8 @@ def graphBeliefOnFixedT(t, hyps):
         pointsK.append(h0/(h0+h1))
 
     print pointsY, pointsK
-    plt.plot(pointsX, pointsY, label="h1")
-    plt.plot(pointsX, pointsK, label="h0")
+    plt.plot(pointsX, pointsY, label="friends")
+    plt.plot(pointsX, pointsK, label="not friends")
     plt.legend(bbox_to_anchor=(0., 1.02, 1., .102), loc=3,
        ncol=2, mode="expand", borderaxespad=0.)
     plt.show()
@@ -147,7 +146,8 @@ def metropolisHastings(data):
             #print a, rand
             current_samples = next_samples
             current_prob = next_prob
-            if iterations > 100 and iterations % 2 == 0: #burn in of 100 and only take every 5. does that go here, or two lines up?
+            #if iterations > 100 and iterations % 2 == 0: #burn in of 100 and only take every 5. does that go here, or two lines up?
+            if iterations > 100: #burn in of 100 and only take every 5. does that go here, or two lines up?
                 a0.append(current_samples[0])
                 a1.append(current_samples[1])
                 theta0.append(current_samples[2])
@@ -161,28 +161,35 @@ def metropolisHastings(data):
         if iterations > max_iter:
             done = not done
 
-    #print samples_z
+    for i in range(len(samples_z)):
+        p = float(sum(samples_z[i]))/len(samples_z[i])
+        samples_z[i] = [1-p, p]
+        print samples_z[i]
 
-    plt.hist(a0, num_bars, normed=1)
-    plt.title("a0")
-    plt.show()
-    plt.hist(theta0, num_bars, normed=1)
-    plt.title("theta0")
-    plt.show()
-    plt.hist(a1, num_bars, normed=1)
-    plt.title("a1")
-    plt.show()
-    plt.hist(theta1, num_bars, normed=1)
-    plt.title("theta1")
-    plt.show()
-    plt.hist(samples_z[0], 2, normed=1)
+    #plt.hist(a0, num_bars, normed=1)
+    #plt.title("a0")
+    #plt.show()
+    #plt.hist(theta0, num_bars, normed=1)
+    #plt.title("theta0")
+    #plt.show()
+    #plt.hist(a1, num_bars, normed=1)
+    #plt.title("a1")
+    #plt.show()
+    #plt.hist(theta1, num_bars, normed=1)
+    #plt.title("theta1")
+    #plt.show()
+
+    plt.bar([0, .5], samples_z[0], width=.5)
     plt.title("z0")
+    plt.xticks([.33, .66], ('not friends', 'friends'))
     plt.show()
-    plt.hist(samples_z[1], 2, normed=1)
+    plt.bar([0, .5], samples_z[1], width=.5)
     plt.title("z1")
+    plt.xticks([.33, .66], ('not friends', 'friends'))
     plt.show()
-    plt.hist(samples_z[2], 2, normed=1)
+    plt.bar([0, .5], samples_z[2], width=.5)
     plt.title("z2")
+    plt.xticks([.33, .66], ('not friends', 'friends'))
     plt.show()
     #return current_samples
 
@@ -194,4 +201,4 @@ def sample_z(t, k, a0, theta0, a1, theta1):
     #print p_h1
     return coin_flip(p_h1)
 
-print metropolisHastings([[5, 1], [5, 2], [5, 55]])
+print metropolisHastings([[5, 1], [5, 15], [5, 55]])

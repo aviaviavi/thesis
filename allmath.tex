@@ -1,0 +1,58 @@
+%% 
+%% LaTeX Boilerplate (http://github.com/gbluma/latex-boilerplate/)
+%% 
+
+\documentclass[12pt,fleqn,leqno,letterpaper]{article}
+
+
+
+\begin{document}
+Poisson Likelihood, Gamma Prior \\
+$$p(\lambda \mid d) = p(d \mid \lambda) p(\lambda) $$\
+Poisson likelihood\\
+ $$ \frac{t\lambda^{k} e^{-\lambda t}}{k!} \propto t\lambda^{k} e^{-\lambda t} $$\\
+Prior\\
+$$ \frac{\beta^{\alpha}}{\Gamma(\alpha)}\lambda^{\alpha - 1} e^{-\beta\lambda} \propto \lambda^{\alpha -1} e^{-\beta \lambda} $$\\
+Prior * Likelihood\\
+$$ \propto \lambda^{\alpha + k - 1} e^{-\lambda(\beta+t)} $$\\
+= Gamma($\lambda;\alpha+k,\beta+t$)\\
+= 
+$$\frac{(\beta+t)^{\alpha+k}}{\Gamma(\alpha+k)} \lambda^{\alpha+k-1} e^{-\lambda(\beta + t)}$$\\
+If we derive WRT $\lambda$, there is a root at
+$$ \lambda = \frac{\alpha + k -1}{\beta + t} $$
+
+
+
+We wish to find:
+
+$$
+p(Z, \alpha, \theta | X) \propto p(X | \alpha, \theta, Z) P(Z) p( \alpha, \theta) $$
+Where
+ $$
+p(Z) = U
+$$
+We want to favor big means for the friends hypothesis, and small means for the not friends hypothesis. So I defined:
+ $$
+p( \alpha, \theta) = \frac{1}{1 - \frac{\alpha_0 \theta_0}{\alpha_1 \theta_1}}
+$$
+and
+$$
+p(X | \alpha, \theta, Z) \propto \prod_i p(x_i | \alpha_0, \theta_0)p(z_i = 0) + p(x_i | \alpha_1, \theta_1) p(z_i = 1)
+$$
+where
+$$
+p(x_i | \alpha, \theta) = \int_0^\infty \frac{\theta^\alpha}{\Gamma(\alpha)} \lambda^{\alpha+k-1} e^{-\lambda(\theta+t)} d\lambda
+$$
+$$
+= \frac{\Gamma(k+\alpha)}{\Gamma(\alpha)} \frac{\theta^\alpha}{(t+\theta)^{k+\alpha}} 
+$$
+k is the number of arrivals seen in $x_i$ in an interval of time of length $t$.
+
+% -- Import content here
+
+
+
+% -- Bibliography (APA style)
+\bibliography{references}
+
+\end{document}
