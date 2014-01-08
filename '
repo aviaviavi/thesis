@@ -40,20 +40,20 @@ class LRUCache(CachePolicy):
 
     def __init__(self, cache_size):
         super(LRUCache, self).__init__(cache_size)
-        self.cache = [] 
+        self.cache = deque()
     
     def get_item(self, item):
         if item in self.cache:
             self.hits += 1
             self.cache.remove(item)
-            self.cache.append(item)
+            self.cache.appendleft(item)
         else:
             self.misses += 1
             if not self.is_full():
-                self.cache.append(item)
+                self.cache.appendleft(item)
             else:
-                self.cache.pop(0)
-                self.cache.append(item)
+                self.cache.pop()
+                self.cache.appendleft(item)
 
     def is_full(self):
         return len(self.cache) == self.cache_size
@@ -89,7 +89,7 @@ class LRU2Cache(LRUCache):
                 new_entry = [0, time.time(), item]
             #either add it, or evict and add
             if not self.is_full():
-                self.cache.append(new_entry)
+                self.cache.appendleft(new_entry)
             else:
                 heapq.heapify(self.cache)
                 evicted = heapreplace(self.cache, new_entry)
@@ -105,7 +105,7 @@ class LFUCache(CachePolicy):
 
     def __init__(self, cache_size):
         super(LFUCache, self).__init__(cache_size)
-        self.cache = [] 
+        self.cache = deque()
         self.counts = Counter()
     
     def is_full(self):
@@ -123,7 +123,7 @@ class LFUCache(CachePolicy):
             self.misses += 1
             if not self.is_full():
                 #add it to cache
-                self.cache.append([self.counts[item], item])
+                self.cache.appendleft([self.counts[item], item])
             else:
                 #evitc lfu and replace
                 heapreplace(self.cache, [self.counts[item], item])
@@ -137,9 +137,9 @@ class TwoQCache(CachePolicy):
     
     def __init__(self, cache_size):
         super(TwoQCache, self).__init__(cache_size)
-        self.q0 = []
-        self.q1 = []
-        self.q_out = []
+        self.q0 = deque()
+        self.q1 = deque()
+        self.q_out = deque()
         self.k_in = cache_size / 4
         self.k_out = cache_size * 2 #TODO verify this is kosher
 
@@ -150,24 +150,24 @@ class TwoQCache(CachePolicy):
         if item in self.q1:
             self.hits += 1
             self.q1.remove(item)
-            self.q1.append(item)
+            self.q1.appendleft(item)
         elif item in self.q_out:
             self.hits += 1 #TODO is this actually a hit?
             self.reclaim_for(item)
-            self.q1.append(item)
+            self.q1.appendleft(item)
         elif item in self.q0:
             self.hits += 1
             pass
         else: #cache miss
             self.misses += 1
             self.reclaim_for(item)
-            self.q0.append(item)
+            self.q0.appendleft(item)
 
     def reclaim_for(self, item):
         if not self.is_full():
             pass
         elif len(self.q0) > self.k_in:
-            self.q_out.append(self.q0.pop()) #evict from q0, store 'address' in q_out
+            self.q_out.appendleft(self.q0.pop()) #evict from q0, store 'address' in q_out
             if len(self.q_out) > self.k_out:
                 self.q_out.pop()
         else:
@@ -183,10 +183,10 @@ class ARCCache(CachePolicy):
 
     def __init__(self, cache_size):
         super(ARCCache, self).__init__(cache_size)
-        self.t1 = []
-        self.b1 = []
-        self.t2 = []
-        self.b2 = []
+        self.t1 = deque()
+        self.b1 = deque()
+        self.t2 = deque()
+        self.b2 = deque()
         self.p = 0
  
     def total_length(self):
@@ -196,28 +196,28 @@ class ARCCache(CachePolicy):
 
         def replace(p):
             if self.t1 and (item in self.b2 and len(self.t1) == p or len(self.t1) == p):
-                self.b1.append(self.t1.pop())
+                self.b1.appendleft(self.t1.pop())
             else:
-                self.b2.append(self.t2.pop())
+                self.b2.appendleft(self.t2.pop())
                 
         if item in self.t1:
             self.hits += 1
             self.t1.remove(item)
-            self.t2.append(item)
+            self.t2.appendleft(item)
         elif item in self.t2:
             self.hits += 1
             self.t2.remove(item)
-            self.t2.append(item)
+            self.t2.appendleft(item)
         elif item in self.b1:
             self.misses += 1
             self.p = min(self.cache_size, self.p + max(len(self.b2) / len(self.b1), 1))
             replace(self.p)
-            self.t2.append(item)
+            self.t2.appendleft(item)
         elif item in self.b2:
             self.misses += 1
             self.p = max(self.cache_size, self.p - max(len(self.b1) / len(self.b2), 1))
             replace(self.p)
-            self.t2.append(item)
+            self.t2.appendleft(item)
         else:
             self.misses += 1
             if len(self.t1) + len(self.b1) == self.cache_size:
@@ -233,7 +233,7 @@ class ARCCache(CachePolicy):
                     except:
                         pass
                     replace(self.p)
-            self.t1.append(item)
+            self.t1.appendleft(item)
 
 
 class LRFUCache(CachePolicy):
@@ -245,7 +245,7 @@ class LRFUCache(CachePolicy):
 
     def __init__(self, cache_size, lam):
         super(LRFUCache, self).__init__(cache_size)
-        self.cache = []
+        self.cache = deque()
         self.lam = lam
         self.c_x = defaultdict(float)
 
@@ -265,6 +265,6 @@ class LRFUCache(CachePolicy):
                 heapq.heapify(self.cache)
                 heapq.heapreplace(self.cache, [self.c_x[item], item])
             else:
-                self.cache.append([self.c_x[item], item]) 
+                self.cache.appendleft([self.c_x[item], item])
         
 

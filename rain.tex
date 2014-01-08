@@ -1,0 +1,18 @@
+\documentclass[12pt,fleqn,leqno,letterpaper]{article}
+\begin{document}
+Base rate of accidents $\lambda_0$\\
+Current rate of accidents $\lambda_{A_t}$\\
+Rain causes accidents.
+$$\lambda_{A_t} = \lambda_0 + R
+$$
+But what's R? It could be:\\
+1) R = c * [inches of rain in last H hours], free parameter c\\
+2) $$R = \sum_{i=0} ce^{-(t-i)} $$ where i is the time of the ith raindrop, and t is the current time. Each raindrop increases the likelihood of an accident and decays with time. Free parameter c\\
+3) $$R = c * d\lambda_r/dt$$ where $\lambda_r$ is the current rate of rainfall\\
+4) ?\\
+5) A linear combination of any of the above
+
+\end{document}
+
+
+
