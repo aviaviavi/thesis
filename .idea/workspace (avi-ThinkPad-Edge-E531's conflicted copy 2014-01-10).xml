@@ -3,7 +3,9 @@
   <component name="ChangeListManager">
     <list default="true" id="edb4f284-e6b6-43f1-b0d8-5acf9434954b" name="Default" comment="">
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/cache.py" afterPath="$PROJECT_DIR$/cache.py" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/.idea/code.iml" afterPath="$PROJECT_DIR$/.idea/code.iml" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/hawkes.py" afterPath="$PROJECT_DIR$/hawkes.py" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/.idea/misc.xml" afterPath="$PROJECT_DIR$/.idea/misc.xml" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/nytimes.txt" afterPath="$PROJECT_DIR$/nytimes.txt" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/run_caching.py" afterPath="$PROJECT_DIR$/run_caching.py" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/.idea/workspace.xml" afterPath="$PROJECT_DIR$/.idea/workspace.xml" />
@@ -32,8 +34,10 @@
       <file leaf-file-name="cache.py" pinned="false" current="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/cache.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state line="522" column="47" selection-start="15627" selection-end="15627" vertical-scroll-proportion="0.0" vertical-offset="9096" max-vertical-offset="9702">
-              <folding />
+            <state line="135" column="22" selection-start="3691" selection-end="3691" vertical-scroll-proportion="0.0" vertical-offset="2376" max-vertical-offset="9882">
+              <folding>
+                <element signature="e#0#38#0" expanded="true" />
+              </folding>
             </state>
           </provider>
         </entry>
@@ -41,10 +45,8 @@
       <file leaf-file-name="run_caching.py" pinned="false" current="true" current-in-tab="true">
         <entry file="file://$PROJECT_DIR$/run_caching.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state line="209" column="0" selection-start="6977" selection-end="6977" vertical-scroll-proportion="0.46534654" vertical-offset="3480" max-vertical-offset="4086">
-              <folding>
-                <element signature="e#0#19#0" expanded="true" />
-              </folding>
+            <state line="63" column="99" selection-start="1696" selection-end="1696" vertical-scroll-proportion="-1.078125" vertical-offset="1512" max-vertical-offset="3312">
+              <folding />
             </state>
           </provider>
         </entry>
@@ -77,10 +79,10 @@
     </option>
   </component>
   <component name="ProjectFrameBounds">
-    <option name="x" value="65" />
-    <option name="y" value="-8" />
-    <option name="width" value="1615" />
-    <option name="height" value="1058" />
+    <option name="x" value="56" />
+    <option name="y" value="-4" />
+    <option name="width" value="1311" />
+    <option name="height" value="773" />
   </component>
   <component name="ProjectInspectionProfilesVisibleTreeState">
     <entry key="Project Default">
@@ -110,7 +112,7 @@
     <option name="STATE" value="0" />
   </component>
   <component name="ProjectView">
-    <navigator currentView="ProjectPane" proportions="" version="1" splitterProportion="0.5">
+    <navigator proportions="" version="1" splitterProportion="0.5">
       <flattenPackages />
       <showMembers />
       <showModules />
@@ -121,29 +123,7 @@
       <autoscrollFromSource />
       <sortByType />
     </navigator>
-    <panes>
-      <pane id="Scope" />
-      <pane id="ProjectPane">
-        <subPane>
-          <PATH>
-            <PATH_ELEMENT>
-              <option name="myItemId" value="code" />
-              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.ProjectViewProjectNode" />
-            </PATH_ELEMENT>
-          </PATH>
-          <PATH>
-            <PATH_ELEMENT>
-              <option name="myItemId" value="code" />
-              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.ProjectViewProjectNode" />
-            </PATH_ELEMENT>
-            <PATH_ELEMENT>
-              <option name="myItemId" value="code" />
-              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
-            </PATH_ELEMENT>
-          </PATH>
-        </subPane>
-      </pane>
-    </panes>
+    <panes />
   </component>
   <component name="PropertiesComponent">
     <property name="options.splitter.main.proportions" value="0.3" />
@@ -378,7 +358,7 @@
     </todo-panel>
   </component>
   <component name="ToolWindowManager">
-    <frame x="65" y="-8" width="1615" height="1058" extended-state="6" />
+    <frame x="56" y="-4" width="1311" height="773" extended-state="6" />
     <editor active="true" />
     <layout>
       <window_info id="Changes" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.3296" sideWeight="0.5" order="7" side_tool="false" content_ui="tabs" />
@@ -386,10 +366,10 @@
       <window_info id="TODO" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.3296582" sideWeight="0.5" order="6" side_tool="false" content_ui="tabs" />
       <window_info id="Structure" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.25" sideWeight="0.5" order="1" side_tool="false" content_ui="tabs" />
       <window_info id="Project" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.25362873" sideWeight="0.8302095" order="0" side_tool="false" content_ui="combo" />
-      <window_info id="Debug" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.6832" sideWeight="0.5" order="3" side_tool="false" content_ui="tabs" />
+      <window_info id="Debug" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.3627343" sideWeight="0.5" order="3" side_tool="false" content_ui="tabs" />
       <window_info id="Favorites" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="2" side_tool="true" content_ui="tabs" />
       <window_info id="Event Log" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.29346094" sideWeight="0.5003723" order="7" side_tool="true" content_ui="tabs" />
-      <window_info id="Run" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" weight="0.30143014" sideWeight="0.4996277" order="2" side_tool="false" content_ui="tabs" />
+      <window_info id="Run" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" weight="0.36265433" sideWeight="0.4996277" order="2" side_tool="false" content_ui="tabs" />
       <window_info id="Version Control" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="7" side_tool="false" content_ui="tabs" />
       <window_info id="Cvs" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.25" sideWeight="0.5" order="4" side_tool="false" content_ui="tabs" />
       <window_info id="Message" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="0" side_tool="false" content_ui="tabs" />
@@ -432,7 +412,7 @@
       <breakpoints-dialog>
         <breakpoints-dialog />
       </breakpoints-dialog>
-      <option name="time" value="47" />
+      <option name="time" value="42" />
     </breakpoint-manager>
   </component>
   <component name="editorHistoryManager">
@@ -498,27 +478,31 @@
     </entry>
     <entry file="file://$PROJECT_DIR$/inference.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state line="106" column="18" selection-start="2845" selection-end="2855" vertical-scroll-proportion="-0.15490533" vertical-offset="1908" max-vertical-offset="3690" />
+        <state line="106" column="18" selection-start="2845" selection-end="2855" vertical-scroll-proportion="-0.15490533" vertical-offset="1908" max-vertical-offset="3690">
+          <folding />
+        </state>
       </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/hawkes.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state line="6" column="5" selection-start="153" selection-end="153" vertical-scroll-proportion="0.0" vertical-offset="0" max-vertical-offset="846" />
+        <state line="6" column="5" selection-start="153" selection-end="153" vertical-scroll-proportion="0.0" vertical-offset="0" max-vertical-offset="846">
+          <folding />
+        </state>
       </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/cache.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state line="522" column="47" selection-start="15627" selection-end="15627" vertical-scroll-proportion="0.0" vertical-offset="9096" max-vertical-offset="9702">
-          <folding />
+        <state line="135" column="22" selection-start="3691" selection-end="3691" vertical-scroll-proportion="0.0" vertical-offset="0" max-vertical-offset="9882">
+          <folding>
+            <element signature="e#0#38#0" expanded="true" />
+          </folding>
         </state>
       </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/run_caching.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state line="209" column="0" selection-start="6977" selection-end="6977" vertical-scroll-proportion="0.46534654" vertical-offset="3480" max-vertical-offset="4086">
-          <folding>
-            <element signature="e#0#19#0" expanded="true" />
-          </folding>
+        <state line="63" column="99" selection-start="1696" selection-end="1696" vertical-scroll-proportion="-1.078125" vertical-offset="1512" max-vertical-offset="3312">
+          <folding />
         </state>
       </provider>
     </entry>

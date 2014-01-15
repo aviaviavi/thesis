@@ -1,8 +1,11 @@
 from Queue import Queue, PriorityQueue
 from collections import Counter, defaultdict, deque
+from copy import copy
 from heapq import *
 import time
 import pdb
+import random
+import math
 
 
 class CachePolicy(object):
@@ -10,6 +13,8 @@ class CachePolicy(object):
     Our partially abstract cache policy class. We just call get item on a sequence of data (one part at a time for now) and it keeps track of
     cache hits and misses given the policy.
     """
+
+    policy_name = "abstract"
 
     def __init__(self, cache_size):
         self.hits = 0
@@ -51,6 +56,9 @@ class CachePolicy(object):
 
     def print_cache(self):
         print self.cache
+
+    def get_cache(self):
+        return self.cache
 
 
 class LRUCache(CachePolicy):
@@ -121,6 +129,33 @@ class LRU2Cache(LRUCache):
                 self.timing[evicted[2]] = evicted
                 return evicted
 
+    def get_cache(self):
+        return [x[2] for x in self.cache]
+
+
+class RandomCache(CachePolicy):
+    """
+    Evict a random item
+    """
+
+    policy_name = "random"
+
+    def __init__(self, cache_size):
+        super(RandomCache, self).__init__(cache_size)
+        self.cache = []
+
+    def is_full(self):
+        return len(self.cache) == self.cache_size
+
+    def get_item(self, item):
+        if item in self.cache:
+            self.hits += 1
+        else:
+            self.misses += 1
+            if self.is_full():
+                self.cache.remove(random.choice(self.cache))
+            self.cache.append(item)
+
 
 class LFUCache(CachePolicy):
     """
@@ -154,6 +189,9 @@ class LFUCache(CachePolicy):
                 evicted = self.cache.pop(0)
                 self.place_sorted([self.counts[item], item])
                 return evicted
+
+    def get_cache(self):
+        return [x[1] for x in self.cache]
 
 
 class TwoQCache(CachePolicy):
@@ -202,6 +240,9 @@ class TwoQCache(CachePolicy):
         else:
             return self.q1.pop(0)
 
+    def get_cache(self):
+        return self.q0 + self.q1
+
 
 class ARCCache(CachePolicy):
     """
@@ -232,6 +273,7 @@ class ARCCache(CachePolicy):
         return evicted
 
     def get_item(self, item):
+        # i got this code off the internet. changed it around a little bit to fit into this class.
         evicted = None
         hit = False
         if item in self.t1:
@@ -245,8 +287,7 @@ class ARCCache(CachePolicy):
             self.t2.remove(item)
             self.t2.appendleft(item)
         if item in self.b1:
-            self.p = min(
-                self.c, self.p + max(len(self.b2) / len(self.b1) , 1))
+            self.p = min(self.c, self.p + max(len(self.b2) / len(self.b1), 1))
             evicted = self.replace(item)
             self.b1.remove(item)
             self.t2.appendleft(item)
@@ -254,7 +295,7 @@ class ARCCache(CachePolicy):
             #    repr(func)[10:30], len(self.t1),len(self.b1),len(self.t2),
             #    len(self.b2), self.p)
         if item in self.b2:
-            self.p = max(0, self.p - max(len(self.b1)/len(self.b2) , 1))
+            self.p = max(0, self.p - max(len(self.b1) / len(self.b2), 1))
             evicted = self.replace(item)
             self.b2.remove(item)
             self.t2.appendleft(item)
@@ -266,7 +307,7 @@ class ARCCache(CachePolicy):
                 self.b1.pop()
                 evicted = self.replace(item)
             else:
-                evicted =  self.t1.pop()
+                evicted = self.t1.pop()
         else:
             total = len(self.t1) + len(self.b1) + len(
                 self.t2) + len(self.b2)
@@ -279,61 +320,11 @@ class ARCCache(CachePolicy):
             self.misses += 1
         return evicted
 
-
-    #def __init__(self, cache_size):
-    #    super(ARCCache, self).__init__(cache_size)
-    #    self.t1 = []
-    #    self.b1 = []
-    #    self.t2 = []
-    #    self.b2 = []
-    #    self.p = 0
-    #
-    #def total_length(self):
-    #    return len(self.t1) + len(self.b1) + len(self.t2) + len(self.b2)
-    #
     def print_cache(self):
         print "t1: {0}, b1: {1}, t2: {2}, b2: {3}, p: {4}".format(self.t1, self.b1, self.t2, self.b2, self.p)
 
-    #def get_item(self, item):
-    #
-    #    def replace(p):
-    #        if self.t1 and (item in self.b2 and len(self.t1) == p or len(self.t1) == p):
-    #            self.b1.append(self.t1.pop(0))
-    #        else:
-    #            self.b2.append(self.t2.pop(0))
-    #    if item in self.t1:
-    #        self.hits += 1
-    #        self.t1.remove(item)
-    #        self.t2.append(item)
-    #    elif item in self.t2:
-    #        self.hits += 1
-    #        self.t2.remove(item)
-    #        self.t2.append(item)
-    #    elif item in self.b1:
-    #        self.misses += 1
-    #        self.p = min(self.cache_size, self.p + max(len(self.b2) / len(self.b1), 1))
-    #        replace(self.p)
-    #        self.t2.append(item)
-    #        self.b1.remove(item)  # i added this because there were items in both b1 and t1, and there were also duplicates in b1
-    #    elif item in self.b2:
-    #        self.misses += 1
-    #        self.p = max(self.cache_size, self.p - max(len(self.b1) / len(self.b2), 1))
-    #        replace(self.p)
-    #        self.t2.append(item)
-    #        self.b2.remove(item)  # same as above
-    #    else:
-    #        self.misses += 1
-    #        if len(self.t1) + len(self.b1) == self.cache_size:
-    #            if len(self.t1) < self.cache_size:
-    #                self.b1.pop(0)
-    #                replace(self.p)
-    #            else:
-    #                self.t1.pop(0)
-    #        elif len(self.t1) + len(self.b1) < self.cache_size <= self.total_length():
-    #            if self.total_length() == 2 * self.cache_size:
-    #                self.b2.pop(0)
-    #            replace(self.p)
-    #        self.t1.append(item)
+    def get_cache(self):
+        return list(self.t1) + list(self.t2)
 
 
 class LRFUCache(CachePolicy):
@@ -353,6 +344,7 @@ class LRFUCache(CachePolicy):
         #last accesses of all items
         self.last_t = defaultdict(int)
         self.time = 0
+        self.policy_name += "-" + str(self.lam)
 
     def get_item(self, item):
         items = [i[1] for i in self.cache]
@@ -379,9 +371,9 @@ class LRFUCache(CachePolicy):
     def is_full(self):
         return len(self.cache) == self.cache_size
 
-    def val_funt(self, x):
+    def val_funt(self, t):
         #this is the function that computes the decay an item had for a given amount of time
-        return (.5) ** (self.lam * x)
+        return (.5) ** (self.lam * t)
 
     def crf_curr(self, b):
         return self.val_funt(self.time - self.last_t[b]) * self.crf[b]
@@ -390,6 +382,9 @@ class LRFUCache(CachePolicy):
         for i in range(0, len(self.cache)):
             if self.cache[i][1] == item:
                 return i
+
+    def get_cache(self):
+        return [x[1] for x in self.cache]
 
 
 class BeladysCache(CachePolicy):
@@ -422,9 +417,9 @@ class BeladysCache(CachePolicy):
                         except ValueError:  # word has no next uses, get rid of it
                             evict_index = j
                             break
-                            # remove it
+                    # remove it
                     self.cache.pop(evict_index)
-                    # append new word to cache
+                # append new word to cache
                 self.cache.append(word)
 
     def __init__(self, cache_size, accesses):
@@ -442,7 +437,8 @@ class BeladysCache(CachePolicy):
     def is_full(self):
         return len(self.cache) == self.cache_size
 
-    def remove_old_access(self, l, t):
+    @staticmethod
+    def remove_old_access(l, t):
         l = filter(lambda x: x > t, l)
         return l
 
@@ -452,6 +448,52 @@ class BeladysCache(CachePolicy):
         self.misses = 0
         self.cache_size = size
         self.cache_input()
+
+
+class AndersonCache(CachePolicy):
+    """
+    Cache based on memory model of Anderson and Schooler 1991
+    """
+    policy_name = "Anderson"
+
+    def __init__(self, cache_size):
+        super(AndersonCache, self).__init__(cache_size)
+        self.cache = []
+        self.history = []
+        self.item_history = defaultdict(list)
+        self.t = 1
+
+    def is_full(self):
+        return len(self.cache) == self.cache_size
+
+    def get_item(self, item):
+        self.history.append(item)
+        self.item_history[item].append(self.t)
+        if item in self.cache:
+            self.hits += 1
+            return
+        self.misses += 1
+        if self.is_full():
+            victim = None
+            min_prob = 0
+            for word in self.cache:
+                tmp = self.need_prob(item)
+                if not victim or tmp <= min_prob:
+                    victim = word
+                    min_prob = tmp
+            self.cache.remove(victim)
+        self.cache.append(item)
+        self.t += 1
+
+    def need_prob(self, item):
+        need = 0
+        power1 = power = 2
+        a = 1
+        b = .61  # magic value from anderson paper
+        for access in self.item_history[item]:
+            need += a * (math.log(access) ** math.log(power))
+            power = max(power1, b * ((self.t - access) ** power1))
+        return need
 
 
 class Stats(object):
@@ -468,7 +510,31 @@ class Stats(object):
         return self.counts[word]
 
     def get_recency(self, word):
-        return len(self.items) - self.items.index(word)
+        index = len(self.items) - 1
+        while self.items[index] != word:
+            index -= 1
+        return self.num_days(index, len(self.items) - 1)
 
     def get_spacing(self, word):
-        pass
+        if self.counts[word] != 2:
+            return None
+        first_use = self.items.index(word)
+        last_use = self.items.index(word, first_use + 1)
+        out = self.num_days(first_use, last_use)
+        return out
+
+    def clear(self):
+        self.items = []
+        self.counts = Counter()
+
+    def num_days(self, start, end):
+        total = 0
+        last_day = None
+        for i in range(start, end):
+            item = self.items[i]
+            if len(item) == 6 and item.isdigit() and item != last_day:
+                total += 1
+                last_day = item
+        return total
+
+
