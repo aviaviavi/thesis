@@ -393,46 +393,44 @@ class BeladysCache(CachePolicy):
     Requires peaking at what memory accesses will happen next. Our comparison for the optimal policy.
     """
 
-    policy_name = "belady's"
+    policy_name = "Belady's"
 
-    def cache_input(self):
-        for t in range(len(self.accesses)):
-            word = self.accesses[t]
-            if word in self.cache:
-                self.hits += 1
-            else:
-                self.misses += 1
-                if self.is_full():
-                    # figure out which item to evict
-                    max_next_access = 0
-                    evict_index = 0
-                    for j in range(len(self.cache)):
-                        curr_word = self.cache[j]
-                        curr_word_accesses = self.access_of[curr_word]
-                        try:
-                            temp = min(self.remove_old_access(curr_word_accesses, t))
-                            if temp > max_next_access:
-                                evict_index = j
-                                max_next_access = temp
-                        except ValueError:  # word has no next uses, get rid of it
+    def get_item(self, word):
+        if word in self.cache:
+            self.hits += 1
+        else:
+            self.misses += 1
+            if self.is_full():
+                # figure out which item to evict
+                max_next_access = 0
+                evict_index = 0
+                for j in range(len(self.cache)):
+                    curr_word = self.cache[j]
+                    curr_word_accesses = self.access_of[curr_word]
+                    try:
+                        temp = min(self.remove_old_access(curr_word_accesses, self.t))
+                        if temp > max_next_access:
                             evict_index = j
-                            break
-                    # remove it
-                    self.cache.pop(evict_index)
-                # append new word to cache
-                self.cache.append(word)
+                            max_next_access = temp
+                    except ValueError:  # word has no next uses, get rid of it
+                        evict_index = j
+                        break
+                # remove it
+                self.cache.pop(evict_index)
+            # append new word to cache
+            self.cache.append(word)
+        self.t += 1
 
     def __init__(self, cache_size, accesses):
         super(BeladysCache, self).__init__(cache_size)
         self.cache_size = cache_size
         self.cache = []
         self.accesses = accesses
+        self.t = 0
         #build accesses
         self.access_of = defaultdict(list)
         for t in range(len(self.accesses)):
             self.access_of[self.accesses[t]].append(t)
-        #start caching
-        self.cache_input()
 
     def is_full(self):
         return len(self.cache) == self.cache_size
@@ -447,7 +445,7 @@ class BeladysCache(CachePolicy):
         self.hits = 0
         self.misses = 0
         self.cache_size = size
-        self.cache_input()
+        self.t = 0
 
 
 class AndersonCache(CachePolicy):
@@ -456,12 +454,13 @@ class AndersonCache(CachePolicy):
     """
     policy_name = "Anderson"
 
-    def __init__(self, cache_size):
+    def __init__(self, cache_size, d1):
         super(AndersonCache, self).__init__(cache_size)
         self.cache = []
         self.history = []
         self.item_history = defaultdict(list)
         self.t = 1
+        self.d1 = d1
 
     def is_full(self):
         return len(self.cache) == self.cache_size
@@ -487,12 +486,19 @@ class AndersonCache(CachePolicy):
 
     def need_prob(self, item):
         need = 0
-        power1 = power = 2
+        power1 = power = self.d1
         a = 1
         b = .61  # magic value from anderson paper
+        last = None
         for access in self.item_history[item]:
-            need += a * (math.log(access) ** math.log(power))
-            power = max(power1, b * ((self.t - access) ** power1))
+            if last is None:
+                last = 0
+            if power1 > 1:
+                need += a * (math.log(access) ** math.log(power))
+            else:
+                need += a * (math.log(access) ** power)
+            power = max(power1, b * ((access - last) ** power1))
+            last = access
         return need
 
 
@@ -521,7 +527,7 @@ class Stats(object):
         first_use = self.items.index(word)
         last_use = self.items.index(word, first_use + 1)
         out = self.num_days(first_use, last_use)
-        return out
+        return [out, self.get_recency(word)]
 
     def clear(self):
         self.items = []
@@ -537,4 +543,18 @@ class Stats(object):
                 last_day = item
         return total
 
+    def pop_day(self):
+        # find first day
+        i = 0
+        while not self.is_day(self.items[i]):
+            i += 1
+        first_day = self.items[i]
+        while not (self.is_day(self.items[0]) and self.items[0] != first_day):
+            popped = self.items.pop(0)
+            if not self.is_day(popped):
+                self.counts[popped] -= 1
+
+    @staticmethod
+    def is_day(item):
+        return len(item) == 6 and item.isdigit()
 

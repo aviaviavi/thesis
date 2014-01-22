@@ -3,8 +3,6 @@
   <component name="ChangeListManager">
     <list default="true" id="edb4f284-e6b6-43f1-b0d8-5acf9434954b" name="Default" comment="">
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/cache.py" afterPath="$PROJECT_DIR$/cache.py" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/hawkes.py" afterPath="$PROJECT_DIR$/hawkes.py" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/nytimes.txt" afterPath="$PROJECT_DIR$/nytimes.txt" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/run_caching.py" afterPath="$PROJECT_DIR$/run_caching.py" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/.idea/workspace.xml" afterPath="$PROJECT_DIR$/.idea/workspace.xml" />
     </list>
@@ -32,7 +30,7 @@
       <file leaf-file-name="cache.py" pinned="false" current="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/cache.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state line="522" column="47" selection-start="15627" selection-end="15627" vertical-scroll-proportion="0.0" vertical-offset="9096" max-vertical-offset="9702">
+            <state line="366" column="60" selection-start="10765" selection-end="10765" vertical-scroll-proportion="0.0" vertical-offset="3844" max-vertical-offset="10062">
               <folding />
             </state>
           </provider>
@@ -41,7 +39,7 @@
       <file leaf-file-name="run_caching.py" pinned="false" current="true" current-in-tab="true">
         <entry file="file://$PROJECT_DIR$/run_caching.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state line="209" column="0" selection-start="6977" selection-end="6977" vertical-scroll-proportion="0.46534654" vertical-offset="3480" max-vertical-offset="4086">
+            <state line="376" column="14" selection-start="13021" selection-end="13021" vertical-scroll-proportion="0.54531944" vertical-offset="6401" max-vertical-offset="8478">
               <folding>
                 <element signature="e#0#19#0" expanded="true" />
               </folding>
@@ -77,7 +75,7 @@
     </option>
   </component>
   <component name="ProjectFrameBounds">
-    <option name="x" value="65" />
+    <option name="x" value="1745" />
     <option name="y" value="-8" />
     <option name="width" value="1615" />
     <option name="height" value="1058" />
@@ -378,7 +376,7 @@
     </todo-panel>
   </component>
   <component name="ToolWindowManager">
-    <frame x="65" y="-8" width="1615" height="1058" extended-state="6" />
+    <frame x="1745" y="-8" width="1615" height="1058" extended-state="6" />
     <editor active="true" />
     <layout>
       <window_info id="Changes" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.3296" sideWeight="0.5" order="7" side_tool="false" content_ui="tabs" />
@@ -386,10 +384,10 @@
       <window_info id="TODO" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.3296582" sideWeight="0.5" order="6" side_tool="false" content_ui="tabs" />
       <window_info id="Structure" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.25" sideWeight="0.5" order="1" side_tool="false" content_ui="tabs" />
       <window_info id="Project" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.25362873" sideWeight="0.8302095" order="0" side_tool="false" content_ui="combo" />
-      <window_info id="Debug" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.6832" sideWeight="0.5" order="3" side_tool="false" content_ui="tabs" />
+      <window_info id="Debug" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.5622933" sideWeight="0.5" order="3" side_tool="false" content_ui="tabs" />
       <window_info id="Favorites" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="2" side_tool="true" content_ui="tabs" />
       <window_info id="Event Log" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.29346094" sideWeight="0.5003723" order="7" side_tool="true" content_ui="tabs" />
-      <window_info id="Run" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" weight="0.30143014" sideWeight="0.4996277" order="2" side_tool="false" content_ui="tabs" />
+      <window_info id="Run" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" weight="0.22601984" sideWeight="0.4996277" order="2" side_tool="false" content_ui="tabs" />
       <window_info id="Version Control" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="7" side_tool="false" content_ui="tabs" />
       <window_info id="Cvs" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.25" sideWeight="0.5" order="4" side_tool="false" content_ui="tabs" />
       <window_info id="Message" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="0" side_tool="false" content_ui="tabs" />
@@ -429,10 +427,17 @@
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>
+      <breakpoints>
+        <line-breakpoint enabled="true" type="python-line">
+          <url>file://$PROJECT_DIR$/cache.py</url>
+          <line>547</line>
+          <option name="timeStamp" value="47" />
+        </line-breakpoint>
+      </breakpoints>
       <breakpoints-dialog>
         <breakpoints-dialog />
       </breakpoints-dialog>
-      <option name="time" value="47" />
+      <option name="time" value="48" />
     </breakpoint-manager>
   </component>
   <component name="editorHistoryManager">
@@ -508,14 +513,14 @@
     </entry>
     <entry file="file://$PROJECT_DIR$/cache.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state line="522" column="47" selection-start="15627" selection-end="15627" vertical-scroll-proportion="0.0" vertical-offset="9096" max-vertical-offset="9702">
+        <state line="366" column="60" selection-start="10765" selection-end="10765" vertical-scroll-proportion="0.0" vertical-offset="3520" max-vertical-offset="10062">
           <folding />
         </state>
       </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/run_caching.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state line="209" column="0" selection-start="6977" selection-end="6977" vertical-scroll-proportion="0.46534654" vertical-offset="3480" max-vertical-offset="4086">
+        <state line="376" column="14" selection-start="13021" selection-end="13021" vertical-scroll-proportion="0.54531944" vertical-offset="6401" max-vertical-offset="8478">
           <folding>
             <element signature="e#0#19#0" expanded="true" />
           </folding>

@@ -1,6 +1,7 @@
 from cache import *
 import matplotlib.pyplot as plt
 import pdb
+from matplotlib.font_manager import FontProperties
 
 
 def make_hist_array(d):
@@ -11,10 +12,20 @@ def make_hist_array(d):
     return output
 
 
-def aggregate(keys_in, values_in, num_divisions=4):
+def is_day(word):
+    return len(word) == 6 and word.isdigit()
+
+def log_or_zero(x):
+    if x == 0:
+        x = .000000001
+    return math.log(x)
+
+def aggregate(keys_in, values_in, num_divisions=20):
     """
     The anderson stats need to be grouped into buckets, metrics like recency are generally almost unique.
     """
+    if len(keys_in) <= 4:
+        return keys_in, values_in 
     new_keys = []
     new_values = []
     block_size = len(keys_in) / num_divisions
@@ -25,6 +36,60 @@ def aggregate(keys_in, values_in, num_divisions=4):
         new_values.append(sum(values_in[start:end]) / block_size)
     print new_keys, new_values
     return new_keys, new_values
+
+def aggregate_log(keys_in, values_in, num_divisions=4):
+    """
+    Since the probabilities hit 0 and 1, we will cut out data after convergence. then
+    aggrigate
+    if 1.0 in values_in:
+        convergence_index = values_in.index(1.0) 
+    elif 0.0 in values_in:
+        convergence_index = values_in.index(0.0)
+    else:
+        convergence_index = None
+    if convergence_index:
+        keys_in, values_in = keys_in[0:convergence_index-1], values_in[0:convergence_index-1]
+    """
+
+    print keys_in, values_in
+    keys_in, values_in = aggregate(keys_in, values_in, num_divisions)
+    return map(math.log, map(lambda x: x + .00001, keys_in)), map(math.log, map(lambda x: x + .00001, values_in))
+
+def logify(list_in):
+    return map(math.log, map(lambda x: x + .00001, list_in))
+
+def set_axis_lines_bw(ax):
+    """
+    Take each Line2D in the axes, ax, and convert the line style to be
+    suitable for black and white viewing.
+    """
+    MARKERSIZE = 3
+
+    COLORMAP = \
+        {
+            'b': {'marker': None, 'dash': (None, None)},
+            'g': {'marker': None, 'dash': [5, 5]},
+            'r': {'marker': None, 'dash': [5, 3, 1, 3]},
+            'c': {'marker': None, 'dash': [1, 3]},
+            'm': {'marker': None, 'dash': [5, 2, 5, 2, 5, 10]},
+            'y': {'marker': None, 'dash': [5, 3, 1, 2, 1, 10]},
+            'k': {'marker': 'o', 'dash': (None, None)}  # [1,2,1,10]}
+        }
+
+    for line in ax.get_lines() + ax.get_legend().get_lines():
+        origColor = line.get_color()
+        line.set_color('black')
+        line.set_dashes(COLORMAP[origColor]['dash'])
+        line.set_marker(COLORMAP[origColor]['marker'])
+        line.set_markersize(MARKERSIZE)
+
+def set_fig_lines_bw(fig):
+    """
+    Take each axes in the figure, and for each line in the axes, make the
+    line viewable in black and white.
+    """
+    for ax in fig.get_axes():
+        set_axis_lines_bw(ax)
 
 nytimes = open("nytimes.txt", "r").read().split()
 
@@ -38,7 +103,7 @@ lrfu = []
 random = []
 anderson = []
 #belady's is really really slow so just uncomment when you actually want to see it
-#beladys = []
+beladys = []
 
 lru_stats = []
 lfu_stats = []
@@ -55,12 +120,14 @@ used_trans_dates = defaultdict(int)
 
 for word in nytimes:
     #if its a date, just continue, unless its the start of a 101st day
-    if len(word) == 6 and word.isdigit():
-        if word in trans_dates and not used_trans_dates[word]:
-            used_trans_dates[word] += 1
-            all_words.append("ENDOF100DAYS")
-        all_words.append(word)
-        continue
+    #if len(word) == 6 and word.isdigit():
+    #    if word in trans_dates and not used_trans_dates[word]:
+    #        used_trans_dates[word] += 1
+    #        all_words.append("ENDOF100DAYS")
+    #    all_words.append(word)
+    #    if word == trans_dates[-1]:
+    #        break
+    #    continue
     if word:
         word = word.strip().lower()
         #clean punctuation
@@ -84,38 +151,55 @@ for cache_size in powers_of_2:
     cache5 = ARCCache(cache_size)
     cache6 = LRFUCache(cache_size, .001)
     cache7 = RandomCache(cache_size)
-    cache8 = AndersonCache(cache_size)
+    cache8 = AndersonCache(cache_size, 1.5)
+    cache9 = BeladysCache(cache_size, all_words)
     #if cache_size == 4:
-    #    cache7 = BeladysCache(cache_size, all_words)
+    #    cache9 = BeladysCache(cache_size, all_words)
     #else:
-    #    cache7.clear(cache_size)
+    #    cache9.clear(cache_size)
     total_length = 0
-    caches = [cache, cache2, cache3, cache4, cache5, cache6, cache7, cache8]
-
+    caches = [cache, cache2, cache3, cache4, cache5, cache6, cache7, cache8, cache9]
+    current_day = None
+    num_day = 0
     for word in all_words:
         if word:
-            if word == "ENDOF100DAYS":
-                for c in caches:
-                    # practice
-                    for item in set(and_stats.items):
-                        practice = and_stats.get_practice(item)
-                        recency = and_stats.get_recency(item)
-                        spacing = and_stats.get_spacing(item)
-                        if item in c.get_cache():
-                            hit_or_miss = "hits"
-                        else:
-                            hit_or_miss = "misses"
-                        stats_100_days[c.policy_name]["practice"][practice][hit_or_miss] += 1
-                        stats_100_days[c.policy_name]["recency"][recency][hit_or_miss] += 1
-                        if spacing:
-                            stats_100_days[c.policy_name]["spacing"][spacing][hit_or_miss] += 1
-                and_stats.clear()
+            and_stats.add_item(word)
+            # if its a day
+            if and_stats.is_day(word):
+                # and its the next day
+                if word != current_day:
+                    num_day += 1
+                    print num_day
+                    current_day = word
+                    if num_day > 100:
+                        and_stats.pop_day()
+                        if num_day % 10 == 0:
+
+                            for c in caches:
+                                for item in set(filter(lambda i: not is_day(i), and_stats.items)):
+                                    practice = and_stats.get_practice(item)
+                                    recency = and_stats.get_recency(item)
+                                    spacing = and_stats.get_spacing(item)
+                                    if item in c.get_cache():
+                                        hit_or_miss = "hits"
+                                    else:
+                                        hit_or_miss = "misses"
+                                    stats_100_days[c.policy_name]["practice"][practice][hit_or_miss] += 1
+                                    stats_100_days[c.policy_name]["recency"][recency][hit_or_miss] += 1
+                                    if spacing:
+                                        if spacing[1] < 10:
+                                            spacing_block = "spacing_1"
+                                        elif 10 <= spacing[1] < 30:
+                                            spacing_block = "spacing_2"
+                                        else:
+                                            spacing_block = "spacing_3"
+                                        stats_100_days[c.policy_name][spacing_block][spacing[0]][hit_or_miss] += 1
             else:
-                and_stats.add_item(word)
-                if not (len(word) == 6 and word.isdigit()):
-                    for c in caches:
-                        evicted = c.get_item(word)
+                for c in caches:
+                    evicted = c.get_item(word)
                 total_length += 1
+
+    and_stats.clear()
 
     lru.append(float(cache.misses) / float(cache.hits))
     lfu.append(float(cache2.misses) / float(cache2.hits))
@@ -124,11 +208,8 @@ for cache_size in powers_of_2:
     arc.append(float(cache5.misses) / float(cache5.hits))
     lrfu.append(float(cache6.misses) / float(cache6.hits))
     anderson.append(float(cache8.misses) / float(cache8.hits))
-    try:
-        random.append(float(cache7.misses) / float(cache7.hits))
-    except:
-        random.append(cache7.misses)
-        #beladys.append(float(cache7.misses) / float(cache7.hits))
+    random.append(float(cache7.misses) / float(cache7.hits))
+    #beladys.append(float(cache9.misses) / float(cache9.hits))
     print cache_size, "done!"
 
 cache.print_stats()
@@ -145,21 +226,24 @@ ax.plot(powers_of_2, lfu, label="lfu")
 ax.plot(powers_of_2, lru2, label="lru2")
 ax.plot(powers_of_2, twoq, label="2q")
 ax.plot(powers_of_2, arc, label="arc")
-ax.plot(powers_of_2, random, label="random")
+#ax.plot(powers_of_2, random, label="random")
 ax.plot(powers_of_2, lrfu, label=cache6.policy_name)
-ax.plot(powers_of_2, anderson, 'p', label=cache8.policy_name)
-#ax.plot(powers_of_2, beladys, "p", label="beladys")
+ax.plot(powers_of_2, anderson, 's-', label=cache8.policy_name)
+#ax.plot(powers_of_2, beladys, "p-", label="beladys")
 legend = ax.legend(loc='upper right', shadow=True)
 plt.ylabel("miss/hit ratio")
 plt.xlabel("cache size (items)")
+set_fig_lines_bw(fig)
 plt.show()
 
-# anderson stats, just use one cache size and uncomment
-caches = [cache, cache2, cache3, cache4, cache5, cache6, cache8]
+# =================================
+# normal plots
+# =================================
 
+# anderson stats, just use one cache size and uncomment
+caches = [cache, cache2, cache3, cache4, cache5, cache6, cache8, cache9]
+colors = ['b', 'g', 'r', 'c', 'm', 'y', 'k', 'orange', 'gray']
 fig, ax = plt.subplots()
-plt.ylabel("hits")
-plt.xlabel("number of items seen since last occurrence")
 #plt.ion()
 for c in caches:
     keys = stats_100_days[c.policy_name]['recency'].keys()
@@ -169,10 +253,14 @@ for c in caches:
         curr_stats = stats_100_days[c.policy_name]['recency'][k]
         values.append(float(curr_stats['hits']) / (curr_stats['hits'] + curr_stats['misses']))
     keys, values = aggregate(keys, values)
-    ax.plot(keys, values, "-", label=c.policy_name)
+    ax.plot(keys, values, label=c.policy_name)
     #plt.draw()
     #pdb.set_trace()
 legend = ax.legend(loc='upper right', shadow=True)
+plt.ylabel("hit percentage")
+plt.xlabel("number of items seen since last occurrence")
+plt.rc('axes', color_cycle=colors)
+#set_fig_lines_bw(fig)
 plt.show()
 #plt.ioff()
 #plt.close()
@@ -187,35 +275,191 @@ for c in caches:
         curr_stats = stats_100_days[c.policy_name]['practice'][k]
         values.append(float(curr_stats['hits']) / (curr_stats['hits'] + curr_stats['misses']))
     keys, values = aggregate(keys, values)
-    ax.plot(keys, values, '-', label=c.policy_name)
-legend = ax.legend(loc='upper right', shadow=True)
-plt.ylabel("hits rate")
+    ax.plot(keys, values, label=c.policy_name)
+legend = ax.legend(loc='lower right', shadow=True)
+plt.ylabel("hit percentage")
 plt.xlabel("number of times seen")
+plt.rc('axes', color_cycle=colors)
+#set_fig_lines_bw(fig)
 plt.show()
 
 fig, ax = plt.subplots()
 for c in caches:
-    keys = stats_100_days[c.policy_name]['spacing'].keys()
+    keys = stats_100_days[c.policy_name]['spacing_1'].keys()
     keys.sort()
     values = []
     for k in keys:
-        curr_stats = stats_100_days[c.policy_name]['spacing'][k]
+        curr_stats = stats_100_days[c.policy_name]['spacing_1'][k]
         values.append(float(curr_stats['hits']) / (curr_stats['hits'] + curr_stats['misses']))
-    keys, values = aggregate(keys, values)
-    ax.plot(keys, values, '-', label=c.policy_name)
-legend = ax.legend(loc='upper right', shadow=True)
-plt.ylabel("hit rate")
-plt.xlabel("number of items between occurrences")
+    keys, values = aggregate(keys, values, 4)
+    ax.plot(keys, values, label=c.policy_name)
+ax.legend(loc='upper center', bbox_to_anchor=(0.5, 1.05),
+          ncol=3, fancybox=True, shadow=True)
+plt.ylabel("hit percentage")
+plt.xlabel("number of items between occurrences (0-9 recency)")
+plt.rc('axes', color_cycle=colors)
+#set_fig_lines_bw(fig)
 plt.show()
+
+fig, ax = plt.subplots()
+for c in caches:
+    keys = stats_100_days[c.policy_name]['spacing_2'].keys()
+    keys.sort()
+    values = []
+    for k in keys:
+        curr_stats = stats_100_days[c.policy_name]['spacing_2'][k]
+        values.append(float(curr_stats['hits']) / (curr_stats['hits'] + curr_stats['misses']))
+    keys, values = aggregate(keys, values, 4)
+    ax.plot(keys, values, label=c.policy_name)
+ax.legend(loc='upper center', bbox_to_anchor=(0.5, 1.05),
+          ncol=3, fancybox=True, shadow=True)
+plt.ylabel("hit percentage")
+plt.xlabel("number of items between occurrences (10-30 recency)")
+plt.rc('axes', color_cycle=colors)
+#set_fig_lines_bw(fig)
+plt.show()
+
+fig, ax = plt.subplots()
+for c in caches:
+    keys = stats_100_days[c.policy_name]['spacing_3'].keys()
+    keys.sort()
+    values = []
+    for k in keys:
+        curr_stats = stats_100_days[c.policy_name]['spacing_3'][k]
+        values.append(float(curr_stats['hits']) / (curr_stats['hits'] + curr_stats['misses']))
+    keys, values = aggregate(keys, values, 4)
+    ax.plot(keys, values, label=c.policy_name)
+legend = ax.legend(loc='center left', shadow=True)
+plt.ylabel("hit percentage")
+plt.xlabel("number of items between occurrences (31+ recency)")
+plt.rc('axes', color_cycle=colors)
+#set_fig_lines_bw(fig)
+plt.show()
+
+# =================================
+# log plots
+# =================================
+
+# anderson stats, just use one cache size and uncomment
+caches = [cache, cache2, cache3, cache4, cache5, cache6, cache8, cache9]
+colors = ['b', 'g', 'r', 'c', 'm', 'y', 'k', 'orange', 'gray']
+fig, ax = plt.subplots()
+plt.ylabel("log odds")
+plt.xlabel("log number of items seen since last occurrence")
+#plt.ion()
+for c in caches:
+    keys = stats_100_days[c.policy_name]['recency'].keys()
+    keys.sort()
+    values = []
+    for k in keys:
+        curr_stats = stats_100_days[c.policy_name]['recency'][k]
+        try:
+            values.append(float(curr_stats['hits']) / curr_stats['misses'])
+        except:
+            values.append(float(curr_stats['hits']) / .1)
+    keys, values = aggregate(keys, values, 3)
+    ax.plot(logify(keys), logify(values), label=c.policy_name)
+    #plt.draw()
+    #pdb.set_trace()
+ax.legend(loc='upper center', bbox_to_anchor=(0.5, 1.05),
+          ncol=3, fancybox=True, shadow=True)
+plt.rc('axes', color_cycle=colors)
+#set_fig_lines_bw(fig)
+plt.show()
+#plt.ioff()
+#plt.close()
+
+
+fig, ax = plt.subplots()
+for c in caches:
+    keys = stats_100_days[c.policy_name]['practice'].keys()
+    keys.sort()
+    values = []
+    for k in keys:
+        curr_stats = stats_100_days[c.policy_name]['practice'][k]
+        values.append(1 / float(curr_stats['hits']))
+    keys, values = aggregate(keys, values, 3)
+    ax.plot(logify(keys), logify(values), label=c.policy_name)
+ax.legend(loc='upper center', bbox_to_anchor=(0.5, 1.05),
+          ncol=3, fancybox=True, shadow=True)
+plt.ylabel("log hit percentage")
+plt.xlabel("log number of times seen")
+plt.rc('axes', color_cycle=colors)
+#set_fig_lines_bw(fig)
+plt.show()
+
+fig, ax = plt.subplots()
+for c in caches:
+    keys = stats_100_days[c.policy_name]['spacing_1'].keys()
+    keys.sort()
+    values = []
+    for k in keys:
+        curr_stats = stats_100_days[c.policy_name]['spacing_1'][k]
+        try:
+            values.append(float(curr_stats['hits']) / curr_stats['misses'])
+        except:
+            values.append(float(curr_stats['hits']) / .1)
+    keys, values = aggregate(keys, values, 3)
+    ax.plot(logify(keys), logify(values), label=c.policy_name)
+ax.legend(loc='upper center', bbox_to_anchor=(0.5, 1.05),
+          ncol=3, fancybox=True, shadow=True)
+plt.ylabel("log hit percentage")
+plt.xlabel("log number of items between occurrences (0-9 recency)")
+plt.rc('axes', color_cycle=colors)
+#set_fig_lines_bw(fig)
+plt.show()
+
+fig, ax = plt.subplots()
+for c in caches:
+    keys = stats_100_days[c.policy_name]['spacing_2'].keys()
+    keys.sort()
+    values = []
+    for k in keys:
+        curr_stats = stats_100_days[c.policy_name]['spacing_2'][k]
+        try:
+            values.append(float(curr_stats['hits']) / curr_stats['misses'])
+        except:
+            values.append(float(curr_stats['hits']) / .1)
+    keys, values = aggregate(keys, values, 3)
+    ax.plot(logify(keys), logify(values), label=c.policy_name)
+ax.legend(loc='right center', bbox_to_anchor=(0.5, 1.05),
+          ncol=3, fancybox=True, shadow=True)
+plt.ylabel("log odss")
+plt.xlabel("log number of items between occurrences (10-30 recency)")
+plt.rc('axes', color_cycle=colors)
+#set_fig_lines_bw(fig)
+plt.show()
+
+fig, ax = plt.subplots()
+for c in caches:
+    keys = stats_100_days[c.policy_name]['spacing_3'].keys()
+    keys.sort()
+    values = []
+    for k in keys:
+        curr_stats = stats_100_days[c.policy_name]['spacing_3'][k]
+        try:
+            values.append(float(curr_stats['hits']) / curr_stats['misses'])
+        except:
+            values.append(float(curr_stats['hits']) / .1)
+    keys, values = aggregate(keys, values, 3)
+    ax.plot(logify(keys), logify(values), label=c.policy_name)
+legend = ax.legend(loc='center right', shadow=True)
+plt.ylabel("log odds")
+plt.xlabel("log number of items between occurrences (31+ recency)")
+plt.rc('axes', color_cycle=colors)
+#set_fig_lines_bw(fig)
+plt.show()
+
+
 
 #if you want a shell after it runs
 #
 import readline # optional, will allow Up/Down/History in the console
-#import code
-#
-#vars = globals().copy()
-#vars.update(locals())
-#shell = code.InteractiveConsole(vars)
-#shell.interact()
+import code
+
+vars = globals().copy()
+vars.update(locals())
+shell = code.InteractiveConsole(vars)
+shell.interact()
 
 
